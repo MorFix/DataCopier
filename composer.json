@@ -1,0 +1,13 @@
+{
+    "name": "morifx/ms-access-to-mysql",
+    "type": "project",
+    "require": {
+        "lincanbin/php-pdo-mysql-class": "^2.0"
+    },
+    "authors": [
+        {
+            "name": "MorFix",
+            "email": "yapan7@outlook.com"
+        }
+    ]
+}
