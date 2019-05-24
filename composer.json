@@ -2,7 +2,8 @@
     "name": "morifx/ms-access-to-mysql",
     "type": "project",
     "require": {
-        "lincanbin/php-pdo-mysql-class": "^2.0"
+        "vlucas/phpdotenv": "^3.3",
+        "paragonie/easydb": "v2.5.1"
     },
     "authors": [
         {
