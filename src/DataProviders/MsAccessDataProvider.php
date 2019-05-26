@@ -44,7 +44,7 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
      */
     function GetTablesNames()
     {
-        return $this->GetConnection()->MetaTables();
+        return array_map('utf8_encode', $this->GetConnection()->MetaTables());
     }
 
     /**
