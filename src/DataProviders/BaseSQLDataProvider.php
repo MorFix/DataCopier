@@ -41,6 +41,8 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
 
     protected abstract function GetAdoClassName();
 
+    protected abstract function GenerateCreateStatement($table);
+
     protected function GetDataDictionary() {
         $con = $this->GetConnection();
 
@@ -54,11 +56,8 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
      */
     public function CreateTable($table)
     {
+        $this->GetConnection()->Execute($this->GenerateCreateStatement($table));
         $this->InsertData($table);
-    }
-
-    private function GenerateCreateStatement($table) {
-
     }
 
     /**

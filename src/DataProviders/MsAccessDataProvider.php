@@ -53,7 +53,7 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
 
         $primary = true;
         foreach ($cols as $index => $col) {
-            $columns[] = new Column($col->name, $col->type, $col->max_length, $primary, false);
+            $columns[] = new Column($col->name, $col->type, $col->max_length, $primary, $primary);
             $primary = false;
         }
 

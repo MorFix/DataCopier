@@ -12,7 +12,7 @@
     $source = new MsAccessDataProvider($_ENV['ACCESSDB_FILE_PATH']);
 
     try {
-        (new DataCopier($source, $dest))->CopyTable('orders');
+        (new DataCopier($source, $dest))->CopyTable('servicelinks');
     } catch (Exception $e) {
         var_dump($e);
     }

@@ -20,4 +20,9 @@ class MsSQLDataProvider extends BaseSQLDataProvider
     {
         return "mssqlnative";
     }
+
+    protected function GenerateCreateStatement($table)
+    {
+        return "";
+    }
 }

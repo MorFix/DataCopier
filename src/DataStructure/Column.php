@@ -45,11 +45,19 @@ class Column
         return $this->_primary;
     }
 
+    public function IsNotNull() {
+        return $this->_notnull;
+    }
+
     public function GetName() {
         return $this->_name;
     }
 
     public function GetType() {
         return $this->_type;
+    }
+
+    public function GetLength() {
+        return $this->_length;
     }
 }
