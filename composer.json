@@ -3,7 +3,7 @@
     "type": "project",
     "require": {
         "vlucas/phpdotenv": "^3.3",
-        "paragonie/easydb": "v2.5.1"
+        "adodb/adodb-php": "v5.20.14"
     },
     "authors": [
         {

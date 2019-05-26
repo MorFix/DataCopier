@@ -29,6 +29,7 @@ class DataCopier
      *
      * @param string $name - The source table name
      * @param string $dest_name - The name of the destination table
+     * @throws Exception - When cannot get the Table object
      */
     public function CopyTable($name, $dest_name = null) {
         $table = $this->_source->GetTable($name);

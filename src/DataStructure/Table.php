@@ -1,6 +1,6 @@
 <?php
 
-class TableData
+class Table
 {
     /**
      * @var string $_name - Table name
@@ -8,7 +8,7 @@ class TableData
     private $_name;
 
     /**
-     * @var ColumnData[] $_columns - All table columns
+     * @var Column[] $_columns - All table columns
      */
     private $_columns;
 
@@ -36,7 +36,7 @@ class TableData
     /**
      * Set the columns in the table
      *
-     * @param ColumnData[] $columns - The columns
+     * @param Column[] $columns - The columns
      * @throws Exception - When there is more than one primary column
      */
     private function SetColumns($columns) {
@@ -76,7 +76,7 @@ class TableData
     /**
      * Gets the columns
      *
-     * @return ColumnData[] - The columns
+     * @return Column[] - The columns
      */
     public function GetColumns() {
         return $this->_columns;

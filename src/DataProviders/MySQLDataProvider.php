@@ -11,4 +11,9 @@ class MySQLDataProvider extends BaseSQLDataProvider
     {
         return "mysql:host=" . $this->_host . ";dbname=" . $this->_dbname;
     }
+
+    protected function GetAdoClassName()
+    {
+        return "mysqli";
+    }
 }

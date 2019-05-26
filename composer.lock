@@ -4,67 +4,61 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b61e204e1a682e989cad234c3c3405ff",
+    "content-hash": "7f73e3ca51846b531068cc175dcde009",
     "packages": [
         {
-            "name": "paragonie/easydb",
-            "version": "v2.5.1",
+            "name": "adodb/adodb-php",
+            "version": "v5.20.14",
             "source": {
                 "type": "git",
-                "url": "https://github.com/paragonie/easydb.git",
-                "reference": "1069934433b25b87c67442441e835b9211dde9b4"
+                "url": "https://github.com/ADOdb/ADOdb.git",
+                "reference": "a32113c6b3e4e2cb8ae6b49752527d5668a9d7a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/easydb/zipball/1069934433b25b87c67442441e835b9211dde9b4",
-                "reference": "1069934433b25b87c67442441e835b9211dde9b4",
+                "url": "https://api.github.com/repos/ADOdb/ADOdb/zipball/a32113c6b3e4e2cb8ae6b49752527d5668a9d7a6",
+                "reference": "a32113c6b3e4e2cb8ae6b49752527d5668a9d7a6",
                 "shasum": ""
             },
             "require": {
-                "ext-pdo": "*"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^5",
-                "spatie/7to5": "^1.0",
-                "squizlabs/php_codesniffer": "^2.7",
-                "vimeo/psalm": "^0|^1"
+                "php": ">=5.3.2"
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "ParagonIE\\EasyDB\\": "src"
-                }
+                "files": [
+                    "adodb.inc.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "MIT"
+                "BSD-3-Clause",
+                "LGPL-2.1-or-later"
             ],
             "authors": [
                 {
-                    "name": "Scott Arciszewski",
-                    "email": "scott@paragonie.com",
-                    "homepage": "https://paragonie.com",
+                    "name": "John Lim",
+                    "email": "jlim@natsoft.com",
+                    "role": "Author"
+                },
+                {
+                    "name": "Damien Regad",
+                    "role": "Current maintainer"
+                },
+                {
+                    "name": "Mark Newnham",
                     "role": "Developer"
-                },
-                {
-                    "name": "Woody Gilk",
-                    "homepage": "https://github.com/shadowhand",
-                    "role": "Contributor"
-                },
-                {
-                    "name": "SignpostMarv",
-                    "homepage": "https://github.com/SignpostMarv",
-                    "role": "Contributor"
                 }
             ],
-            "description": "Easy-to-use database abstraction",
+            "description": "ADOdb is a PHP database abstraction layer library",
+            "homepage": "http://adodb.org/",
             "keywords": [
+                "abstraction",
                 "database",
-                "pdo",
-                "security",
-                "sql"
+                "layer",
+                "library",
+                "php"
             ],
-            "time": "2017-12-27T18:55:11+00:00"
+            "time": "2019-01-05T23:16:44+00:00"
         },
         {
             "name": "phpoption/phpoption",

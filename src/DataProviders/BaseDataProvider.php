@@ -1,12 +1,9 @@
 <?php
 
-use ParagonIE\EasyDB\Factory;
-use ParagonIE\EasyDB\EasyDB;
-
 abstract class BaseDataProvider
 {
     /**
-     * @var EasyDB $_con
+     * @var ADOConnection $_con
      */
     private $_con;
 
@@ -31,7 +28,8 @@ abstract class BaseDataProvider
         $this->_username = $username;
         $this->_password = $password;
 
-        $this->_con = Factory::create($this->GetDSN(), $this->_username, $this->_password);
+        $this->_con = $this->OpenAdoConnection();
+        $this->_con->SetCharset("UTF8");
     }
 
     protected function GetConnection() {
@@ -44,4 +42,16 @@ abstract class BaseDataProvider
      * @return string - The DSN
      */
     protected abstract function GetDSN();
+
+    /**
+     * Gets the connection object
+     *
+     * @return ADOConnection - The connection
+     */
+    protected abstract function OpenAdoConnection();
+
+    public function __destruct()
+    {
+        $this->_con->Close();
+    }
 }

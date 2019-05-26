@@ -8,8 +8,8 @@ require(__DIR__ . '/Interfaces/IDataSource.php');
 require(__DIR__ . '/Interfaces/IDataDestination.php');
 
 // Data structures
-require(__DIR__ . '/DataStructure/TableData.php');
-require(__DIR__ . '/DataStructure/ColumnData.php');
+require(__DIR__ . '/DataStructure/Table.php');
+require(__DIR__ . '/DataStructure/Column.php');
 
 // Data providers
 require(__DIR__ . '/DataProviders/BaseDataProvider.php');

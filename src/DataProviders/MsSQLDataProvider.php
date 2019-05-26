@@ -15,4 +15,9 @@ class MsSQLDataProvider extends BaseSQLDataProvider
 
         return "odbc:Driver=" . $driver . ";Server=" . $this->_host . ";Database=" . $this->_dbname;
     }
+
+    protected function GetAdoClassName()
+    {
+        return "mssqlnative";
+    }
 }
