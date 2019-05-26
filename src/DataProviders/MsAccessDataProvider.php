@@ -38,6 +38,16 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
     }
 
     /**
+     * Gets all tables
+     *
+     * @return string[]
+     */
+    function GetTablesNames()
+    {
+        return $this->GetConnection()->MetaTables();
+    }
+
+    /**
      * Gets the table's columns metadata
      *
      * @param string $table The table name

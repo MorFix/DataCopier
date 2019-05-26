@@ -20,3 +20,6 @@ require(__DIR__ . '/DataProviders/MsAccessDataProvider.php');
 
 // Logic
 require(__DIR__ . '/DataCopier.php');
+
+// Helpers
+require(__DIR__ . '/functions.php');
