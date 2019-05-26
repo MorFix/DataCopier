@@ -135,10 +135,8 @@ $t = $p->GetTablesNames();
         }
 
         function sendData() {
-            document.getElementById('copying').style.display = 'block';
-
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", '/process.php', true);
+            xhr.open("POST", 'process.php', true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onreadystatechange = function() {
                 if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
@@ -150,7 +148,7 @@ $t = $p->GetTablesNames();
                 document.getElementById('copying').style.display = 'none';
             };
 
-            const tables = document.copyForm["source_tables[]"];
+            const tables = document.copyForm["source_tables[]"] || [];
             const details = {
                 from: fromPrev.value,
                 to: toPrev.value,
@@ -165,11 +163,12 @@ $t = $p->GetTablesNames();
                 .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key]))
                 .join('&');
 
+            document.getElementById('copying').style.display = 'block';
             xhr.send(formBody);
         }
 
         function initTables(source, file) {
-            let url = '/tables.php?source=' + encodeURIComponent(source);
+            let url = 'tables.php?source=' + encodeURIComponent(source);
             url += file ? '&file=' + encodeURIComponent(file) : '';
 
             const xhr = new XMLHttpRequest();
