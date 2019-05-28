@@ -7,7 +7,7 @@ ini_set('display_errors', 0);
 /**
  * @var IDataSource $provider
  */
-$provider = get_provider($_REQUEST['source']);
+$provider = get_provider($_REQUEST['source'], $_REQUEST['src_db']);
 
 if (!($provider instanceof IDataSource)) {
     die(json_encode(array()));

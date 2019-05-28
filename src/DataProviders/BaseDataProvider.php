@@ -37,13 +37,6 @@ abstract class BaseDataProvider
     }
 
     /**
-     * Get a DSN that could be used to open a PDO connection
-     *
-     * @return string - The DSN
-     */
-    protected abstract function GetDSN();
-
-    /**
      * Gets the connection object
      *
      * @return ADOConnection - The connection

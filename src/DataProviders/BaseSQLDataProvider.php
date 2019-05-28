@@ -8,46 +8,41 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
     protected $_host;
 
     /**
-     * @var string $_dbname - The database name
-     */
-    protected $_dbname;
-
-    /**
      * BaseSQLDataProvider constructor.
      *
      * @param $host
      * @param $username
      * @param $password
-     * @param $dbname
+     * @param $db
      */
-    public function __construct($host, $username, $password, $dbname)
+    public function __construct($host, $username, $password, $db)
     {
         $this->_host = $host;
-        $this->_dbname = $dbname;
 
         parent::__construct($username, $password);
+
+        $this->MaybeCreateDatabase($db);
+        $this->GetConnection()->SelectDB($db);
     }
 
     protected function OpenAdoConnection()
     {
         /**
-         * @var ADOConnection $db
+         * @var ADOConnection $con
          */
-        $db = ADONewConnection($this->GetAdoClassName());
-        $db->Connect($this->_host, $this->_username, $this->_password, $this->_dbname);
+        $con = ADONewConnection($this->GetAdoClassName());
+        $con->Connect($this->_host, $this->_username, $this->_password);
 
-        return $db;
+        return $con;
     }
 
     protected abstract function GetAdoClassName();
 
+    protected abstract function MaybeCreateDatabase($db);
+
     protected abstract function GenerateCreateStatement($table);
 
-    protected function GetDataDictionary() {
-        $con = $this->GetConnection();
-
-        return NewDataDictionary($con, 'mysql');
-    }
+    protected abstract function GetDataDictionary();
 
     /**
      * Creates the specified table in the destination
@@ -71,6 +66,8 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
         }
 
         $db = $this->GetConnection();
+        $primary_keys = $this->GetConnection()->MetaPrimaryKeys($table->GetName());
+        $primary_keys = is_array($primary_keys) ? $primary_keys : array();
 
         foreach($table->GetData() as $row) {
 
@@ -79,7 +76,8 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
             $vals = "";
 
             foreach ($row as $col => $value) {
-                if (empty($value)) {
+                if (empty($value) ||
+                    (!$this->IsPrimaryInsertAllowed() && in_array($col, $primary_keys))) {
                     continue;
                 }
 
@@ -89,12 +87,12 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
                 }
 
                 $firstColumn = false;
-                $cols .= "`" . addslashes($col) . "`";
+                $cols .= $this->PrepareColumnNameForInsert(addslashes($col));
 
                 if ($this->IsIntColumn($col, $table) && is_numeric($value)) {
                     $vals .= $value;
                 } else {
-                    $vals .= "\"" . addslashes($value) . "\"";
+                    $vals .= $this->PrepareColumnValueForInsert(addslashes($value));
                 }
             }
 
@@ -102,6 +100,12 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
             $db->Execute($insert);
         }
     }
+
+    protected abstract function IsPrimaryInsertAllowed();
+
+    protected abstract function PrepareColumnNameForInsert($col);
+
+    protected abstract function PrepareColumnValueForInsert($val);
 
     /**
      * Whether a column is an integer
@@ -117,7 +121,7 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataDest
          */
         $dictionary = $this->GetDataDictionary();
         $uppername = strtoupper($name);
-        $numbers = array('INTEGER', 'BIGINT', 'TINYINT', 'SMALLINT', 'NUMERIC', 'DOUBLE');
+        $numbers = array('INT', 'INTEGER', 'BIGINT', 'TINYINT', 'SMALLINT', 'NUMERIC', 'DOUBLE');
 
         foreach ($table->GetColumns() as $col) {
             if (strtoupper($col->GetName()) === $uppername &&

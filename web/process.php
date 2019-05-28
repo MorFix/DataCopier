@@ -8,8 +8,8 @@ if (empty($_REQUEST['copy'])) {
     exit;
 }
 
-$source = get_provider($_REQUEST["from"]);
-$dest = get_provider($_REQUEST["to"]);
+$source = get_provider($_REQUEST["from"], $_REQUEST["src_db"]);
+$dest = get_provider($_REQUEST["to"], $_REQUEST["dest_db"]);
 
 try {
     $copier = new DataCopier($source, $dest);
