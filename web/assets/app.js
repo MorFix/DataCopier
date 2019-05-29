@@ -1,90 +1,111 @@
-function maybeInitTables() {
-    if (!fromPrev) {
+const SRC_FIELDS_PREFIX = 'src';
+const DEST_FIELDS_PREFIX = 'dest';
+const CHANGE_EVENT = 'change';
+const DB = 'db';
+const selectedRadios = {};
+
+function maybeInitSourceTables() {
+    if (!selectedRadios[SRC_FIELDS_PREFIX]) {
         return;
     }
 
-    let db;
-    switch (fromPrev.value) {
-        case 'access':
-            db = document.copyForm.file.value;
-            break;
-        case 'mysql':
-        case 'mssql':
-            db = document.copyForm[fromPrev.value + '_src_db'].value;
-            break;
-    }
+    const selectedRadio = selectedRadios[SRC_FIELDS_PREFIX];
 
-    initTables(fromPrev.value, db);
+    initTables(selectedRadio.value, document.migrator[selectedRadio.value + '_' + SRC_FIELDS_PREFIX + '_' + DB].value);
+}
+
+function createTableTag(name) {
+    const div = document.createElement('div');
+    const checkbox = document.createElement('input');
+    const span = document.createElement('span');
+
+    Object.assign(checkbox, {
+        type: 'checkbox',
+        name: 'source_tables[]',
+        value: name
+    });
+    span.innerText = name;
+
+    div.appendChild(checkbox);
+    div.appendChild(span);
+
+    return div;
 }
 
 function renderTables(tables) {
-    const createTag = name => {
-        const div = document.createElement('div');
-        const elem = document.createElement('input');
-        elem.name = 'source_tables[]';
-        elem.value = name;
-        elem.type = 'checkbox';
-
-        const span = document.createElement('span');
-        span.innerText = name;
-
-        div.appendChild(elem);
-        div.appendChild(span);
-
-        return div;
-    };
-
     const container = document.getElementById('tables');
     container.innerHTML = '';
-    tables.map(createTag).forEach(x => container.appendChild(x))
+    tables.map(createTableTag).forEach(x => container.appendChild(x))
 }
 
-function handleFromChange() {
-    maybeInitTables();
-    const dbs = ['mysql', 'mssql'];
+function getRadioValues(radioType) {
+    return Array.from(document.migrator[radioType]).map(x => x.value)
+}
 
-    dbs.forEach(x => {
-        const elem = document.getElementById(x + '_src_db_container');
-        if (!elem) {
-            return;
+function handleDbRadioChange(type) {
+    getRadioValues(type)
+        .forEach(x => {
+            const dbnameContainer = document.getElementById(x + '_' + type + '_' + DB + '_container');
+            if (!dbnameContainer) {
+                return;
+            }
+
+            dbnameContainer.style.display = x === document.migrator[type].value ? '' : 'none';
+        });
+}
+
+function triggerAllChangeEvents() {
+    maybeInitSourceTables();
+    handleDbRadioChange(SRC_FIELDS_PREFIX);
+    handleDbRadioChange(DEST_FIELDS_PREFIX);
+}
+
+function registerRadioChange(dbType, cb) {
+    const elem = document.migrator[dbType];
+    const listener = function () {
+        if (this !== selectedRadios[dbType]) {
+            selectedRadios[dbType] = this;
         }
 
-        elem.style.display = x === (fromPrev && fromPrev.value) ? '' : 'none';
-    });
+        cb();
+    };
 
-    document.getElementById('file_container').style.display = fromPrev && fromPrev.value === 'access'
-        ? ''
-        : 'none';
-}
-
-function handleToChange() {
-    const dbs = ['mysql', 'mssql'];
-
-    dbs.forEach(x => {
-        const elem = document.getElementById(x + '_dest_db_container');
-        if (!elem) {
-            return;
-        }
-
-        elem.style.display = x === (toPrev && toPrev.value) ? '' : 'none';
-    });
-}
-
-function handleRadioChange() {
-    handleFromChange();
-    handleToChange();
-}
-
-function registerRadioChange(elem, cb) {
     if (!elem.length) {
-        elem.addEventListener('change', cb);
+        elem.addEventListener(CHANGE_EVENT, listener);
 
         return;
     }
 
     for (let i = 0; i < elem.length; i++) {
-        elem[i].addEventListener('change', cb);
+        elem[i].addEventListener(CHANGE_EVENT, listener);
     }
+}
+
+function createFormBody() {
+    const SOURCE_TABLES = 'source_tables[]';
+
+    const tables = document.migrator[SOURCE_TABLES] || [];
+
+    const selectedSrcDbType = selectedRadios[SRC_FIELDS_PREFIX].value;
+    const selectedDestDbType = selectedRadios[DEST_FIELDS_PREFIX].value;
+
+    const srcDb = document.migrator[selectedSrcDbType.value + '_' + SRC_FIELDS_PREFIX + '_' + DB];
+    const destDb = document.migrator[selectedDestDbType + '_' + DEST_FIELDS_PREFIX + '_' + DB];
+
+    const details = {
+        copy: true,
+        src: selectedSrcDbType,
+        dest: selectedDestDbType,
+        src_db: (srcDb && srcDb.value) || '',
+        dest_db: (destDb && destDb.value) || '',
+        [SOURCE_TABLES]: Object.keys(tables)
+            .filter(key => tables[key].checked)
+            .map(key => tables[key].value)
+    };
+
+    return Object.keys(details)
+        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key]))
+        .join('&');
 }
 
 function sendData() {
@@ -92,6 +113,7 @@ function sendData() {
     const processContainer = document.getElementById('copying');
 
     const xhr = new XMLHttpRequest();
+
     xhr.open("POST", 'process.php', true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function() {
@@ -108,31 +130,14 @@ function sendData() {
         }
     };
 
-    const tables = document.copyForm["source_tables[]"] || [];
-    const details = {
-        from: fromPrev.value,
-        to: toPrev.value,
-        file: document.copyForm.file.value,
-        src_db: document.copyForm[fromPrev.value + '_src_db'] ? document.copyForm[fromPrev.value + '_src_db'].value : '',
-        dest_db: document.copyForm[toPrev.value + '_dest_db'] ? document.copyForm[toPrev.value + '_dest_db'].value : '',
-        copy: true,
-        "source_tables[]": Object.keys(tables)
-            .filter(key => tables[key].checked)
-            .map(key => tables[key].value)
-    };
-
-    const formBody = Object.keys(details)
-        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key]))
-        .join('&');
-
     resultContainer.innerHTML = '';
     processContainer.style.display = 'block';
-    xhr.send(formBody);
+    xhr.send(createFormBody());
 }
 
 function initTables(source, db) {
-    let url = 'tables.php?source=' + encodeURIComponent(source);
-    url += db ? '&src_db=' + encodeURIComponent(db) : '';
+    let url = 'tables.php?' + SRC_FIELDS_PREFIX + '=' + encodeURIComponent(source);
+    url += db ? '&' + SRC_FIELDS_PREFIX + '_' + DB + '=' + encodeURIComponent(db) : '';
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
@@ -147,38 +152,18 @@ function initTables(source, db) {
     xhr.send();
 }
 
-let fromPrev = null;
-let toPrev = null;
-registerRadioChange(document.copyForm.from, function() {
-    if (this !== fromPrev) {
-        fromPrev = this;
-    }
+function isSectionValid(dbType) {
+    return selectedRadios[dbType] &&
+        getRadioValues(dbType).includes(selectedRadios[dbType].value) &&
+        !!document.migrator[selectedRadios[dbType].value + '_' + dbType + '_' + DB].value;
+}
 
-    handleFromChange();
-});
+triggerAllChangeEvents();
 
-registerRadioChange(document.copyForm.to, function() {
-    if (this !== toPrev) {
-        toPrev = this;
-    }
-
-    handleToChange();
-});
-
-handleRadioChange();
-
-document.copyForm.file.addEventListener('change', function () {
-    maybeInitTables();
-});
-
-document.copyForm.addEventListener('submit', function(event) {
+document.migrator.addEventListener('submit', function(event) {
     event.preventDefault();
-    const dbs = ['mysql', 'mssql'];
 
-    if (!fromPrev || !toPrev ||
-        (fromPrev.value === 'access' && !document.copyForm.file.value) ||
-        (dbs.includes(fromPrev.value) && !document.copyForm[fromPrev.value + '_src_db'].value) ||
-        (dbs.includes(toPrev.value) && !document.copyForm[toPrev.value + '_dest_db'].value)) {
+    if (!isSectionValid(SRC_FIELDS_PREFIX) || !isSectionValid(DEST_FIELDS_PREFIX)) {
         alert ("Please fill all fields");
 
         return;
@@ -186,3 +171,14 @@ document.copyForm.addEventListener('submit', function(event) {
 
     sendData();
 });
+
+registerRadioChange(SRC_FIELDS_PREFIX, () => {
+    maybeInitSourceTables();
+    handleDbRadioChange(SRC_FIELDS_PREFIX)
+});
+
+registerRadioChange(DEST_FIELDS_PREFIX, () => handleDbRadioChange(DEST_FIELDS_PREFIX));
+
+getRadioValues(SRC_FIELDS_PREFIX)
+    .map(x => document.migrator[x + '_' + SRC_FIELDS_PREFIX + '_db'])
+    .forEach(x => x.addEventListener(CHANGE_EVENT, maybeInitSourceTables));
