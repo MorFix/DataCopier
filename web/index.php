@@ -43,8 +43,8 @@ require(__DIR__ . "/../src/load.php");
                 <input type="text" name="access_src_db" value="<?= $_ENV["ACCESSDB_FILE_PATH"]; ?>" />
             </div>
 
-            <div class="row margin">
-                <label>Tables:</label>
+            <div class="row margin" id="tables_container">
+                <label>Tables:&nbsp;</label>
                 <div id="tables" class="column"></div>
             </div>
 

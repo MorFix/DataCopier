@@ -1,6 +1,6 @@
 <?php
 
-class MsSQLDataProvider extends BaseSQLDataProvider
+class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
 {
     protected function GetAdoClassName()
     {
@@ -74,6 +74,72 @@ class MsSQLDataProvider extends BaseSQLDataProvider
     protected function MaybeCreateDatabase($db)
     {
         $this->GetConnection()->Execute("IF DB_ID('" . $db . "') IS NULL\nCREATE DATABASE " . $db . " COLLATE Hebrew_CI_AS");
+    }
+
+    /**
+     * Gets all data of a specific table
+     *
+     * @param $name - The table name
+     * @return Table - The table data
+     * @throws Exception
+     */
+    function GetTable($name)
+    {
+        return new Table($name, $this->GetColumns($name), $this->GetData($name));
+    }
+
+    /**
+     * Gets all tables
+     *
+     * @return string[]
+     */
+    function GetTablesNames()
+    {
+        return $this->GetConnection()->MetaTables();
+    }
+
+    /**
+     * Gets the table's columns metadata
+     *
+     * @param string $table The table name
+     * @return Column[] - All columns metadata
+     */
+    private function GetColumns($table) {
+        /**
+         * @var ADODB_DataDict $dictionary
+         */
+        $dictionary = $this->GetDataDictionary();
+        $columns = [];
+
+        foreach ($this->GetConnection()->MetaColumns($table) as $col) {
+            $columns[] = new Column($col->name, $dictionary->MetaType($col->type), $col->max_length, $col->auto_increment, $col->not_null);
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @param $table
+     * @return array
+     * @throws Exception
+     */
+    private function GetData($table) {
+        /**
+         * @var ADORecordSet $res
+         */
+        $res = $this->GetConnection()->Execute("SELECT * FROM " . $table);
+        if (!$res) {
+            throw new Exception("Cannot get table data: " . $table);
+        }
+
+
+        $data = array();
+        while (!$res->EOF) {
+            $data[] = get_object_vars($res->FetchObj());
+            $res->MoveNext();
+        }
+
+        return $data;
     }
 
     protected function PrepareColumnNameForInsert($col)

@@ -5,10 +5,13 @@ const DB = 'db';
 const selectedRadios = {};
 
 function maybeInitSourceTables() {
+    const tablesContainer = document.getElementById('tables_container');
     if (!selectedRadios[SRC_FIELDS_PREFIX]) {
+        tablesContainer.style.display = 'none';
         return;
     }
 
+    tablesContainer.style.display = '';
     const selectedRadio = selectedRadios[SRC_FIELDS_PREFIX];
 
     initTables(selectedRadio.value, document.migrator[selectedRadio.value + '_' + SRC_FIELDS_PREFIX + '_' + DB].value);
@@ -32,9 +35,7 @@ function createTableTag(name) {
     return div;
 }
 
-function renderTables(tables) {
-    const container = document.getElementById('tables');
-    container.innerHTML = '';
+function renderTables(tables, container) {
     tables.map(createTableTag).forEach(x => container.appendChild(x))
 }
 
@@ -84,12 +85,15 @@ function registerRadioChange(dbType, cb) {
 function createFormBody() {
     const SOURCE_TABLES = 'source_tables[]';
 
-    const tables = document.migrator[SOURCE_TABLES] || [];
+    const tablesValue = document.migrator[SOURCE_TABLES];
+    const tables = tablesValue.length
+        ? tablesValue
+        : (tablesValue ? [tablesValue] : []);
 
     const selectedSrcDbType = selectedRadios[SRC_FIELDS_PREFIX].value;
     const selectedDestDbType = selectedRadios[DEST_FIELDS_PREFIX].value;
 
-    const srcDb = document.migrator[selectedSrcDbType.value + '_' + SRC_FIELDS_PREFIX + '_' + DB];
+    const srcDb = document.migrator[selectedSrcDbType + '_' + SRC_FIELDS_PREFIX + '_' + DB];
     const destDb = document.migrator[selectedDestDbType + '_' + DEST_FIELDS_PREFIX + '_' + DB];
 
     const details = {
@@ -136,6 +140,8 @@ function sendData() {
 }
 
 function initTables(source, db) {
+    const container = document.getElementById('tables');
+
     let url = 'tables.php?' + SRC_FIELDS_PREFIX + '=' + encodeURIComponent(source);
     url += db ? '&' + SRC_FIELDS_PREFIX + '_' + DB + '=' + encodeURIComponent(db) : '';
 
@@ -145,10 +151,12 @@ function initTables(source, db) {
         if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
             const tables = JSON.parse(this.responseText);
 
-            renderTables(tables);
+            container.innerHTML = '';
+            renderTables(tables, container);
         }
     };
 
+    container.innerHTML = 'Loading tables...';
     xhr.send();
 }
 
@@ -180,5 +188,5 @@ registerRadioChange(SRC_FIELDS_PREFIX, () => {
 registerRadioChange(DEST_FIELDS_PREFIX, () => handleDbRadioChange(DEST_FIELDS_PREFIX));
 
 getRadioValues(SRC_FIELDS_PREFIX)
-    .map(x => document.migrator[x + '_' + SRC_FIELDS_PREFIX + '_db'])
+    .map(x => document.migrator[x + '_' + SRC_FIELDS_PREFIX + '_' + DB])
     .forEach(x => x.addEventListener(CHANGE_EVENT, maybeInitSourceTables));
