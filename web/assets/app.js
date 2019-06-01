@@ -85,10 +85,11 @@ function registerRadioChange(dbType, cb) {
 function createFormBody() {
     const SOURCE_TABLES = 'source_tables[]';
 
-    const tablesValue = document.migrator[SOURCE_TABLES];
-    const tables = tablesValue.length
-        ? tablesValue
-        : (tablesValue ? [tablesValue] : []);
+    // May be a RadioNode, a RadioNodeList object or null
+    const tablesValue = document.migrator[SOURCE_TABLES] || [];
+
+    // Is this an array/list ?
+    const tables = typeof tablesValue[Symbol.iterator] === 'function' ? tablesValue : [tablesValue];
 
     const selectedSrcDbType = selectedRadios[SRC_FIELDS_PREFIX].value;
     const selectedDestDbType = selectedRadios[DEST_FIELDS_PREFIX].value;
@@ -122,15 +123,14 @@ function sendData() {
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function() {
         if (this.readyState === XMLHttpRequest.DONE) {
-            let result;
-            try {
-                result = JSON.parse(this.responseText);
-            } catch {
-                result = this.responseText || "An error has occured";
-            }
-
-            resultContainer.innerHTML = result;
             processContainer.style.display = 'none';
+
+            const parsed = JSON.parse(this.responseText);
+            if (this.status === 200) {
+                resultContainer.innerHTML = parsed;
+            } else {
+                resultContainer.innerHTML = parsed.message;
+            }
         }
     };
 
@@ -148,11 +148,15 @@ function initTables(source, db) {
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.onreadystatechange = function() {
-        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-            const tables = JSON.parse(this.responseText);
+        if (this.readyState === XMLHttpRequest.DONE) {
+            const parsed = JSON.parse(this.responseText);
 
-            container.innerHTML = '';
-            renderTables(tables, container);
+            if (this.status === 200) {
+                container.innerHTML = '';
+                renderTables(parsed, container);
+            } else {
+                container.innerHTML = parsed.message;
+            }
         }
     };
 

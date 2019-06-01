@@ -8,10 +8,13 @@ if (empty($_REQUEST['copy'])) {
     exit;
 }
 
-$source = get_provider($_REQUEST["src"], $_REQUEST["src_db"]);
-$dest = get_provider($_REQUEST["dest"], $_REQUEST["dest_db"]);
-
 try {
+    $source = get_provider($_REQUEST["src"], $_REQUEST["src_db"]);
+    $source->Connect();
+
+    $dest = get_provider($_REQUEST["dest"], $_REQUEST["dest_db"]);
+    $dest->Connect();
+
     $copier = new DataCopier($source, $dest);
 
     foreach($_REQUEST["source_tables"] as $table) {
@@ -20,5 +23,5 @@ try {
 
     die(json_encode("Copied Successfully!"));
 } catch (Exception $e) {
-    die(json_encode($e));
+    handleException($e);
 }

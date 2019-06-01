@@ -9,20 +9,14 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
 
     public function __construct($filename, $username = '', $password = '')
     {
-        $this->_filename = $filename;
-
         parent::__construct($username, $password);
+
+        $this->_filename = $filename;
     }
 
-    public function GetDSN()
+    public function Connect()
     {
-        $driver = "Microsoft Access Driver (*.mdb)";
-        $charset = "UTF-8";
-        $dbq = $this->_filename;
-        $uid = $this->_username;
-        $pwd = $this->_password;
-
-        return "Driver={" . $driver . "};charset=" . $charset . "; DBQ=" . $dbq . "; Uid=" . $uid . "; Pwd= ". $pwd .";";
+        $this->GetConnection()->connect($this->GetDSN());
     }
 
     /**
@@ -32,7 +26,7 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
      * @return Table - The table data
      * @throws Exception
      */
-    function GetTable($name)
+    public function GetTable($name)
     {
         return new Table($name, $this->GetColumns($name), $this->GetData($name));
     }
@@ -42,9 +36,14 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
      *
      * @return string[]
      */
-    function GetTablesNames()
+    public function GetTablesNames()
     {
         return array_map('utf8_encode', $this->GetConnection()->MetaTables());
+    }
+
+    protected function GetAdoClassName()
+    {
+        return 'access';
     }
 
     /**
@@ -57,12 +56,12 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
         $columns = [];
 
         /**
-         * @var ADOFieldObject[] $cols
+         * @var ADOFieldObject[] $meta_cols
          */
-        $cols = $this->GetConnection()->MetaColumns($table);
+        $meta_cols = $this->GetConnection()->MetaColumns($table);
 
         $primary = true;
-        foreach ($cols as $index => $col) {
+        foreach ($meta_cols as $index => $col) {
             $columns[] = new Column($col->name, $col->type, $col->max_length, $primary, $primary);
             $primary = false;
         }
@@ -70,39 +69,39 @@ class MsAccessDataProvider extends BaseDataProvider implements IDataSource
         return $columns;
     }
 
+    /**
+     * @param $table
+     * @return array
+     * @throws Exception
+     */
     private function GetData($table) {
         /**
-         * @var ADORecordSet $res
+         * @var ADORecordSet $result
          */
-        $res = $this->GetConnection()->Execute("SELECT * FROM " . $table);
+        $result = $this->GetConnection()->Execute("SELECT * FROM " . $table);
 
         $data = array();
-        while (!$res->EOF) {
-            $row = get_object_vars($res->FetchObj());
+        while (!$result->EOF) {
+            $row = get_object_vars($result->FetchObj());
             foreach ($row as $key => $col) {
                 $row[$key] = iconv('windows-1255', 'utf-8', $col);
             }
 
             $data[] = $row;
-            $res->MoveNext();
+            $result->MoveNext();
         }
 
         return $data;
     }
 
-    /**
-     * Gets the connection object
-     *
-     * @return ADOConnection - The connection
-     */
-    protected function OpenAdoConnection()
+    private function GetDSN()
     {
-        /**
-         * @var ADOConnection $db;
-         */
-        $db = ADONewConnection("access");
-        $db->connect($this->GetDSN());
+        $driver = "Microsoft Access Driver (*.mdb)";
+        $charset = "UTF-8";
+        $dbq = $this->_filename;
+        $uid = $this->_username;
+        $pwd = $this->_password;
 
-        return $db;
+        return "Driver={" . $driver . "};charset=" . $charset . "; DBQ=" . $dbq . "; Uid=" . $uid . "; Pwd= ". $pwd .";";
     }
 }

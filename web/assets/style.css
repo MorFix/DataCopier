@@ -24,3 +24,9 @@ label {
 .margin {
     margin: 10px;
 }
+
+#result {
+    word-break: break-word;
+    width: 90%;
+    text-align: center;
+}

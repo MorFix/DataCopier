@@ -1,9 +1,16 @@
 {
     "name": "morifx/ms-access-to-mysql",
     "type": "project",
+    "config": {
+        "platform": {
+            "php": "7.2.0"
+        }
+    },
     "require": {
         "vlucas/phpdotenv": "^3.3",
-        "adodb/adodb-php": "v5.20.14"
+        "adodb/adodb-php": "v5.20.14",
+        "ext-json": "*",
+        "ext-iconv": "*"
     },
     "authors": [
         {
