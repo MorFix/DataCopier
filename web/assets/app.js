@@ -83,10 +83,10 @@ function registerRadioChange(dbType, cb) {
 }
 
 function createFormBody() {
-    const SOURCE_TABLES = 'source_tables[]';
+    const SOURCE_TABLES = 'source_tables';
 
     // May be a RadioNode, a RadioNodeList object or null
-    const tablesValue = document.migrator[SOURCE_TABLES] || [];
+    const tablesValue = document.migrator[SOURCE_TABLES + '[]'] || [];
 
     // Is this an array/list ?
     const tables = typeof tablesValue[Symbol.iterator] === 'function' ? tablesValue : [tablesValue];
@@ -97,7 +97,7 @@ function createFormBody() {
     const srcDb = document.migrator[selectedSrcDbType + '_' + SRC_FIELDS_PREFIX + '_' + DB];
     const destDb = document.migrator[selectedDestDbType + '_' + DEST_FIELDS_PREFIX + '_' + DB];
 
-    const details = {
+    return {
         copy: true,
         src: selectedSrcDbType,
         dest: selectedDestDbType,
@@ -107,10 +107,6 @@ function createFormBody() {
             .filter(key => tables[key].checked)
             .map(key => tables[key].value)
     };
-
-    return Object.keys(details)
-        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key]))
-        .join('&');
 }
 
 function sendData() {
@@ -120,7 +116,7 @@ function sendData() {
     const xhr = new XMLHttpRequest();
 
     xhr.open("POST", 'process.php', true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
     xhr.onreadystatechange = function() {
         if (this.readyState === XMLHttpRequest.DONE) {
             processContainer.style.display = 'none';
@@ -136,7 +132,7 @@ function sendData() {
 
     resultContainer.innerHTML = '';
     processContainer.style.display = 'block';
-    xhr.send(createFormBody());
+    xhr.send(JSON.stringify(createFormBody()));
 }
 
 function initTables(source, db) {

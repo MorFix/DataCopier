@@ -4,18 +4,20 @@ require(__DIR__ . "/../src/load.php");
 
 ini_set('display_errors', 0);
 
-if (empty($_REQUEST['copy'])) {
+$request = json_decode(file_get_contents("php://input"), true);
+
+if (empty($request) || empty($request['copy'])) {
     exit;
 }
 
+header("Content-Type: application/json; charset=UTF-8");
 try {
-    $source = get_provider($_REQUEST["src"], $_REQUEST["src_db"]);
-
-    $dest = get_provider($_REQUEST["dest"], $_REQUEST["dest_db"]);
+    $source = get_provider($request["src"], $request["src_db"]);
+    $dest = get_provider($request["dest"], $request["dest_db"]);
 
     $copier = new DataCopier($source, $dest);
 
-    foreach($_REQUEST["source_tables"] as $table) {
+    foreach($request["source_tables"] as $table) {
         $copier->CopyTable($table);
     }
 
