@@ -9,11 +9,7 @@
 function get_provider($name, $db = null) {
     switch ($name) {
         case "access":
-            $file = (!empty($db) && file_exists($db))
-                ? $db
-                : $_ENV['ACCESSDB_FILE_PATH'];
-
-            $provider = new MsAccessDataProvider($file);
+            $provider = new MsAccessDataProvider(!empty($db) ? $db : $_ENV['ACCESSDB_FILE_PATH']);
             break;
         case "mysql":
             $provider = new MySQLDataProvider($_ENV['MYSQL_HOST'],
@@ -42,13 +38,19 @@ function get_provider($name, $db = null) {
  * @param Exception $e
  */
 function handleException($e) {
+    $general_error = 'An error has occurred';
     http_response_code(500);
 
     $err = array(
         'message' => intval($_ENV['SHOW_ERRORS'])
             ? $e->getMessage()
-            : 'An error has occurred'
+            : $general_error
     );
 
-    die(json_encode($err, JSON_INVALID_UTF8_IGNORE ));
+    $encoded = json_encode($err);
+    if ($encoded === false) {
+      $encoded = json_encode($general_error);
+    }
+
+    die($encoded);
 }
