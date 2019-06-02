@@ -10,10 +10,8 @@ if (empty($_REQUEST['copy'])) {
 
 try {
     $source = get_provider($_REQUEST["src"], $_REQUEST["src_db"]);
-    $source->Connect();
 
     $dest = get_provider($_REQUEST["dest"], $_REQUEST["dest_db"]);
-    $dest->Connect();
 
     $copier = new DataCopier($source, $dest);
 

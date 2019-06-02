@@ -7,6 +7,7 @@ require(__DIR__ . "/../src/load.php");
     <head>
         <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="assets/style.css" />
+        <title>Copy Data</title>
     </head>
 
     <body>

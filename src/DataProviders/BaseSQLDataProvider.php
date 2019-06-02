@@ -150,8 +150,8 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
                     continue;
                 }
 
-                if ($this->IsIntColumn($col, $table) && is_numeric($value)) {
-                    $values[] = $value;
+                if ($this->IsIntColumn($col, $table) && (is_numeric($value) || is_null($value))) {
+                    $values[] = !empty($value) ? $value : 0;
                 } else {
                     $values[] = $this->PrepareColumnValueForInsert($value);
                 }
