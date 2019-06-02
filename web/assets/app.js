@@ -121,11 +121,11 @@ function sendData() {
         if (this.readyState === XMLHttpRequest.DONE) {
             processContainer.style.display = 'none';
 
-            const parsed = JSON.parse(this.responseText);
-            if (this.status === 200) {
-                resultContainer.innerHTML = parsed;
-            } else {
-                resultContainer.innerHTML = parsed.message;
+            try {
+                const parsed = JSON.parse(this.responseText);
+                resultContainer.innerHTML = this.status === 200 ? parsed : parsed.message;
+            } catch (e) {
+                resultContainer.innerHTML = 'Fatal error occurred';
             }
         }
     };
