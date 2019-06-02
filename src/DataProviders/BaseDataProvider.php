@@ -84,7 +84,7 @@ abstract class BaseDataProvider
 
         error_log("(" . date('Y-m-d H:i:s') . ") $message");
 
-        throw new Exception($message);
+        throw new Exception(htmlspecialchars($message));
     }
 
     public function __destruct()
