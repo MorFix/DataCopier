@@ -1,7 +1,6 @@
 <?php
 // Environment variables
-$dotenv = Dotenv\Dotenv::create(__DIR__ . '/..');
-$dotenv->load();
+require(__DIR__ . '/load-dotenv.php');
 
 // Interfaces
 require(__DIR__ . '/Interfaces/IDataSource.php');
@@ -23,3 +22,10 @@ require(__DIR__ . '/DataCopier.php');
 
 // Helpers
 require(__DIR__ . '/functions.php');
+
+session_start();
+if (!isset($_SESSION['verified']) || !$_SESSION['verified']) {
+    header('Location: login.php');
+
+    die();
+}
