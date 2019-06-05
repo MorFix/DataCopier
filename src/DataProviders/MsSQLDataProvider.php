@@ -92,8 +92,8 @@ class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
 
         $stmt = $column->GetName() . " " . $type . " ";
 
-        if (in_array($type, array("NVARCHAR"))) {
-            $stmt .= "(" . $column->GetLength() . ") ";
+        if ($type === "NVARCHAR") {
+            $stmt .= "(255) ";
         }
 
         $stmt .= $column->IsNotNull() ? "NOT NULL " : "DEFAULT NULL ";

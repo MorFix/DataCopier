@@ -86,8 +86,12 @@ class MySQLDataProvider extends BaseSQLDataProvider
 
         $stmt = "`" . $column->GetName() . "` ";
         $stmt .= $type . " ";
-        if (!in_array($type, array("DATETIME", "LONGTEXT"))) {
+        if (!in_array($type, array("DATETIME", "LONGTEXT", "VARCHAR"))) {
             $stmt .= "(" . $column->GetLength() . ") ";
+        }
+
+        if ($type === 'VARCHAR') {
+            $stmt .= "(255) ";
         }
 
         $stmt .= $column->IsNotNull() ? "NOT NULL " : "DEFAULT NULL ";

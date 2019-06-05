@@ -15,13 +15,15 @@ function get_provider($name, $db = null) {
             $provider = new MySQLDataProvider($_ENV['MYSQL_HOST'],
                                          $_ENV['MYSQL_USERNAME'],
                                          $_ENV['MYSQL_PASSWORD'],
-                                         !empty($db) ? $db : $_ENV['MYSQL_DBNAME']);
+                                         !empty($db) ? $db : $_ENV['MYSQL_DBNAME'],
+                                         intval($_ENV['INSERT_BATCH']));
             break;
         case "mssql":
             $provider = new MsSQLDataProvider($_ENV['MSSQL_HOST'],
                                          $_ENV['MSSQL_USERNAME'],
                                          $_ENV['MSSQL_PASSWORD'],
-                                        !empty($db) ? $db : $_ENV['MSSQL_DBNAME']);
+                                        !empty($db) ? $db : $_ENV['MSSQL_DBNAME'],
+                                         intval($_ENV['INSERT_BATCH']));
             break;
         default:
             throw new Exception($name. " is not not supported yet");
