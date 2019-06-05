@@ -71,6 +71,7 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
      */
     public function CreateTable($table)
     {
+        $this->GetConnection()->Execute($this->GenerateDropStatement($table));
         $this->GetConnection()->Execute($this->GenerateCreateStatement($table));
         $this->InsertData($table);
     }
@@ -82,6 +83,8 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
      * @return bool
      */
     protected abstract function MaybeCreateDatabase($db);
+
+    protected abstract function GenerateDropStatement($table);
 
     protected abstract function GenerateCreateStatement($table);
 

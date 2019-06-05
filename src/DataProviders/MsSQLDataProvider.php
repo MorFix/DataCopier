@@ -8,6 +8,19 @@ class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
     }
 
     /**
+     * Creates the table drop statement
+     *
+     * @param Table $table
+     * @return string
+     */
+    protected function GenerateDropStatement($table) {
+        $stmt = "IF EXISTS (SELECT * FROM sysobjects WHERE name='" . $table->GetName() . "' and xtype='U')\n";
+        $stmt .= "DROP TABLE " . $table->GetName();
+
+        return $stmt;
+    }
+
+    /**
      * Creates the table creation statement
      *
      * @param Table $table
@@ -16,8 +29,7 @@ class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
     protected function GenerateCreateStatement($table)
     {
         $columns = $table->GetColumns();
-        $stmt = "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='" . $table->GetName() . "' and xtype='U')\n";
-        $stmt .= "CREATE TABLE " . $table->GetName() . " (\n";
+        $stmt = "CREATE TABLE " . $table->GetName() . " (\n";
 
         foreach ($columns as $index => $column) {
             $stmt .= $this->GenerateCreateColumn($column);

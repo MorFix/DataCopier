@@ -13,6 +13,16 @@ class MySQLDataProvider extends BaseSQLDataProvider
     }
 
     /**
+     * Creates the table drop statement
+     *
+     * @param Table $table
+     * @return string
+     */
+    protected function GenerateDropStatement($table) {
+        return 'DROP TABLE IF EXISTS ' . $table->GetName();
+    }
+
+    /**
      * Generates a create table statement
      *
      * @param Table $table
@@ -21,7 +31,7 @@ class MySQLDataProvider extends BaseSQLDataProvider
     protected function GenerateCreateStatement($table)
     {
         $columns = $table->GetColumns();
-        $stmt = "CREATE TABLE IF NOT EXISTS `" . $table->GetName() . "` (\n";
+        $stmt = "CREATE TABLE `" . $table->GetName() . "` (\n";
 
         foreach ($columns as $index => $column) {
             $stmt .= $this->GenerateCreateColumn($column);
