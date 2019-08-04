@@ -62,6 +62,7 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
         $this->GetConnection()->Connect($this->_host, $this->_username, $this->_password);
         $this->MaybeCreateDatabase($this->_db);
         $this->GetConnection()->SelectDB($this->_db);
+        $this->GetConnection()->SetCharSet('UTF8');
     }
 
     /**

@@ -95,13 +95,15 @@ class MySQLDataProvider extends BaseSQLDataProvider
         $type = $dictionary->ActualType($column->GetType());
 
         $stmt = "`" . $column->GetName() . "` ";
-        $stmt .= $type . " ";
-        if (!in_array($type, array("DATETIME", "LONGTEXT", "VARCHAR"))) {
-            $stmt .= "(" . $column->GetLength() . ") ";
+
+        // This because of row size issues
+        if ($type === 'VARCHAR') {
+            $type = "LONGTEXT";
         }
 
-        if ($type === 'VARCHAR') {
-            $stmt .= "(255) ";
+        $stmt .= $type . " ";
+        if (!in_array($type, array("DATETIME", "LONGTEXT"))) {
+            $stmt .= "(" . $column->GetLength() . ") ";
         }
 
         $stmt .= $column->IsNotNull() ? "NOT NULL " : "DEFAULT NULL ";
