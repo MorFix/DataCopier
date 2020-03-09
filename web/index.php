@@ -70,6 +70,11 @@ require(__DIR__ . "/../src/load.php");
                 <input type="text" name="mssql_dest_db" value="<?= $_ENV["MSSQL_DBNAME"]; ?>" />
             </div>
 
+            <div class="row margin" id="drop_checkbox" style="display: none;">
+                <label>Drop Existing Tables?</label>
+                <input name="drop_checkbox" type="checkbox" checked />
+            </div>
+
             <input type="submit" name="copy" value="Copy" />
 
             <div class="margin" id="copying" style="display: none;">

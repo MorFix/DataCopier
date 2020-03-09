@@ -14,10 +14,7 @@ class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
      * @return string
      */
     protected function GenerateDropStatement($table) {
-        $stmt = "IF EXISTS (SELECT * FROM sysobjects WHERE name='" . $table->GetName() . "' and xtype='U')\n";
-        $stmt .= "DROP TABLE " . $table->GetName();
-
-        return $stmt;
+        return $this->GetTableExistsCondition($table, true) . "DROP TABLE " . $table->GetName();
     }
 
     /**
@@ -29,7 +26,7 @@ class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
     protected function GenerateCreateStatement($table)
     {
         $columns = $table->GetColumns();
-        $stmt = "CREATE TABLE " . $table->GetName() . " (\n";
+        $stmt = $this->GetTableExistsCondition($table, false) . "CREATE TABLE " . $table->GetName() . " (\n";
 
         foreach ($columns as $index => $column) {
             $stmt .= $this->GenerateCreateColumn($column);
@@ -84,6 +81,17 @@ class MsSQLDataProvider extends BaseSQLDataProvider implements IDataSource
     protected function IsPrimaryInsertAllowed()
     {
         return false;
+    }
+
+    /**
+     * Generates a statement to check for an existence of a table
+     *
+     * @param Table $table
+     * @param bool $exists
+     * @return string
+     */
+    private function GetTableExistsCondition($table, $exists = true) {
+        return "IF ". (!$exists ? 'NOT' : '') ." EXISTS (SELECT * FROM sysobjects WHERE name='" . $table->GetName() . "' and xtype='U')\n";
     }
 
     /**

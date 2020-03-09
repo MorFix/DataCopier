@@ -14,11 +14,12 @@ header("Content-Type: application/json; charset=UTF-8");
 try {
     $source = get_provider($request["src"], $request["src_db"]);
     $dest = get_provider($request["dest"], $request["dest_db"]);
+    $drop = $request["drop"] ? true : false;
 
     $copier = new DataCopier($source, $dest);
 
     foreach($request["source_tables"] as $table) {
-        $copier->CopyTable($table);
+        $copier->CopyTable($table, null, $drop);
     }
 
     die(json_encode("Copied Successfully!"));

@@ -29,15 +29,16 @@ class DataCopier
      *
      * @param string $name - The source table name
      * @param string $dest_name - The name of the destination table
+     * @param bool $drop - Should the destination table be dropped first
      * @throws Exception - When cannot get the Table object
      */
-    public function CopyTable($name, $dest_name = null) {
+    public function CopyTable($name, $dest_name = null, $drop = true) {
         $table = $this->_source->GetTable($name);
 
         if (!empty($dest_name)) {
             $table->SetName($dest_name);
         }
 
-        $this->_destination->CreateTable( $table );
+        $this->_destination->CreateTable( $table, $drop );
     }
 }

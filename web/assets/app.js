@@ -51,7 +51,12 @@ function handleDbRadioChange(type) {
                 return;
             }
 
-            dbnameContainer.style.display = x === document.migrator[type].value ? '' : 'none';
+            const displayValue = x === document.migrator[type].value ? '' : 'none';
+            dbnameContainer.style.display = displayValue;
+
+            if (!displayValue) {
+                document.getElementById('drop_checkbox').style.display = displayValue;
+            }
         });
 }
 
@@ -97,8 +102,11 @@ function createFormBody() {
     const srcDb = document.migrator[selectedSrcDbType + '_' + SRC_FIELDS_PREFIX + '_' + DB];
     const destDb = document.migrator[selectedDestDbType + '_' + DEST_FIELDS_PREFIX + '_' + DB];
 
+    const drop = document.migrator['drop_checkbox'].checked;
+
     return {
         copy: true,
+        drop: drop,
         src: selectedSrcDbType,
         dest: selectedDestDbType,
         src_db: (srcDb && srcDb.value) || '',

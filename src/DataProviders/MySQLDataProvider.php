@@ -31,7 +31,7 @@ class MySQLDataProvider extends BaseSQLDataProvider
     protected function GenerateCreateStatement($table)
     {
         $columns = $table->GetColumns();
-        $stmt = "CREATE TABLE `" . $table->GetName() . "` (\n";
+        $stmt = "CREATE TABLE IF NOT EXISTS `" . $table->GetName() . "` (\n";
 
         foreach ($columns as $index => $column) {
             $stmt .= $this->GenerateCreateColumn($column);
@@ -97,7 +97,7 @@ class MySQLDataProvider extends BaseSQLDataProvider
         $stmt = "`" . $column->GetName() . "` ";
 
         // This because of row size issues
-        if ($type === 'VARCHAR') {
+        if (in_array($type, array('VARCHAR', 'DATETIME'))) {
             $type = "LONGTEXT";
         }
 

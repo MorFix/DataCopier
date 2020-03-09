@@ -69,11 +69,16 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
      * Creates the specified table in the destination
      *
      * @param Table $table - The table data to create
+     * @param bool $drop - Should the table be dropped first
      */
-    public function CreateTable($table)
+    public function CreateTable($table, $drop = true)
     {
-        $this->GetConnection()->Execute($this->GenerateDropStatement($table));
+        if ($drop) {
+            $this->GetConnection()->Execute($this->GenerateDropStatement($table));
+        }
+
         $this->GetConnection()->Execute($this->GenerateCreateStatement($table));
+
         $this->InsertData($table);
     }
 
