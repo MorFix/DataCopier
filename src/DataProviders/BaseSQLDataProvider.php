@@ -157,36 +157,87 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
             return;
         }
 
+        $batch_start = 0;
+        $data_batch = array_slice($table->GetData(), $batch_start, $this->_insertBatch);
+
+        while (!empty($data_batch)) {
+            $this->InsertBatch($table, $data_batch);
+
+            $batch_start += $this->_insertBatch;
+            $data_batch = array_slice($table->GetData(), $batch_start, $this->_insertBatch);
+        }
+    }
+
+    /**
+     * Insert a batch of rows into the table
+     *
+     * @param Table $table - The table
+     * @param array $data_batch - The batch of the rows
+     */
+    private function InsertBatch($table, $data_batch) {
+        $columns = '(' . implode(",", $this->GetColumnsForInsert($table)) . ')';
         $primary_keys = $this->GetConnection()->MetaPrimaryKeys($table->GetName());
-        $int_cols = $this->GetIntCols($table->GetColumns());
         $rows = array();
 
-        foreach($table->GetData() as $row) {
-            $row_values = '(';
-            $last_col = array_keys($row)[count($row) - 1];
-
-            foreach ($row as $col => $value) {
-                if (!$this->IsPrimaryInsertAllowed() && in_array($col, $primary_keys)) {
-                    continue;
-                }
-
-                if (in_array(strtoupper($col), $int_cols) && (is_numeric($value) || empty($value))) {
-                    $row_values .= !empty($value) ? $value : '0';
-                } else {
-                    $row_values .= $this->PrepareColumnValueForInsert($value);
-                }
-
-                if ($col !== $last_col) {
-                    $row_values .= ', ';
-                }
+        foreach($data_batch as $row) {
+            if (!$this->IsPrimaryInsertAllowed()) {
+                $row = array_filter($row, function ($col_name) use ($primary_keys) {
+                    return !in_array($col_name, $primary_keys);
+                }, ARRAY_FILTER_USE_KEY);
             }
 
-            $row_values .= ')';
-
-            $rows[] = $row_values;
+            $row_data = $this->GetRowData($row, $table->GetColumns());
+            $rows[] = "(" . implode(',', $row_data) . ")";
         }
 
-        $this->InsertBatch($table, $rows);
+        $insert = "INSERT INTO " . $table->GetName() . ' ' . $columns . " VALUES " . implode(', ', $rows);
+        $this->GetConnection()->Execute($insert);
+    }
+
+    /**
+     * Sanitizes the data for all values in a specific row
+     *
+     * @param array $row - The row raw data
+     * @param Column[] $columns - All Columns in the table
+     *
+     * @return array - The sanitized row data
+     */
+    private function GetRowData($row, $columns) {
+        $row_data = array();
+
+        foreach ($row as $column_name => $column_value) {
+            $upper_col = strtoupper($column_name);
+            $column = array_values(array_filter($columns, function ($current_col) use ($upper_col) {
+                return strtoupper($current_col->GetName()) === strtoupper($upper_col);
+            }))[0];
+
+            $row_data[$column_name] = $this->GetColumnValue($column, $column_value);
+        }
+
+        return $row_data;
+    }
+
+    /**
+     * Sanitizes a column value
+     *
+     * @param Column $column - The column
+     * @param * $value - The column value
+
+     * @return string|int - The column value
+     */
+    private function GetColumnValue($column, $value)
+    {
+        if ($this->IsIntColumn($column)) {
+            if (empty($value)) {
+                return '0';
+            }
+
+            if (is_numeric($value)) {
+                return $value;
+            }
+        }
+
+        return $this->PrepareColumnValueForInsert($value);
     }
 
     /**
@@ -210,49 +261,19 @@ abstract class BaseSQLDataProvider extends BaseDataProvider implements IDataSour
     }
 
     /**
-     * Gets int columns
+     * Check whether is numeric column
      *
-     * @param Column[] $columns - The column
+     * @param Column $column - The column
      *
-     * @return array
+     * @return bool
      */
-    private function GetIntCols($columns) {
+    private function IsIntColumn($column) {
         /**
          * @var ADODB_DataDict $dictionary
          */
         $dictionary = $this->GetDataDictionary();
         $numbers = array('INT', 'INTEGER', 'BIGINT', 'TINYINT', 'SMALLINT', 'NUMERIC', 'DOUBLE');
 
-        $int_cols = array();
-
-        foreach ($columns as $col) {
-            if (in_array($dictionary->ActualType($col->GetType()), $numbers)) {
-                $int_cols[] = strtoupper($col->GetName());
-            }
-        }
-
-        return $int_cols;
-    }
-
-    /**
-     * Insert batch of rows into the table
-     *
-     * @param Table $table
-     * @param array $rows
-     */
-    private function InsertBatch($table, $rows) {
-        $columns = '(' . implode(",", $this->GetColumnsForInsert($table)) . ')';
-
-        $collected_rows = array();
-
-        while ($collected_rows[] = array_shift($rows)) {
-            if (count($rows) > 0 && count($collected_rows) !== $this->_insertBatch) {
-                continue;
-            }
-
-            $insert = "INSERT INTO " . $table->GetName() . ' ' . $columns . " VALUES " . implode(', ', $collected_rows);
-            $this->GetConnection()->Execute($insert);
-            $collected_rows = array();
-        }
+        return in_array($dictionary->ActualType($column->GetType()), $numbers);
     }
 }
